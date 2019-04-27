@@ -63,13 +63,8 @@ def _postprocess_output(s):
     return s
 
 
-def get_text(file_path, n=3, sentence_length=140, start=None):
+def get_text(ngram_dict, ngram_token_set, ngram_frequency_dict, n=3, sentence_length=140, start=None):
     """ Generate a random sentence based on input text corpus """
-    # get n-grams and frequency distribution
-    token_list = _preprocess_corpus(file_path)
-    ngram_dict = _get_token_ngrams(token_list, n)
-    ngram_token_set, ngram_frequency_dict = _get_ngram_frequency(ngram_dict)
-
     if start is None:
         start = random.choice(list(ngram_dict.keys()))
         while start is '\n':
@@ -89,12 +84,19 @@ def get_text(file_path, n=3, sentence_length=140, start=None):
     return _postprocess_output(current_sentence)
 
 
-if __name__ == "__main__":
-    for n in range(3, 6):
-        with open('outputs/token_' + str(n) + '_gram_prompt_1_1000.txt', 'w', encoding='utf-8') as file:
-            for i in range(1000):
-                sentence = get_text('resources/asap_prompt_1.txt', n, 776)
-                file.write(sentence + '\n')
-        file.close()
+max_length = {'1': 776, '2': 918, '3': 742, '4': 631, '5': 1478, '6': 1032, '7': 1103, '8': 1651, '9': 1820, '10': 1188}
 
-    # print(gengram_sentence(corpus, start_seq=None))
+
+if __name__ == "__main__":
+    for i in range(1, 11):
+        for n in range(1, 6):
+            with open('outputs/token_' + str(n) + '_gram_prompt_'+str(i)+'_1000.txt', 'w', encoding='utf-8') as file:
+                print('Generating ' + str(n) + '-gram based answer for' + ' prompt ' + str(i) + ' with max length ' + str(max_length[str(i)]))
+                # get n-grams and frequency distribution
+                token_list = _preprocess_corpus('resources/asap_prompt_' + str(i) + '.txt')
+                ngram_dict = _get_token_ngrams(token_list, n)
+                ngram_token_set, ngram_frequency_dict = _get_ngram_frequency(ngram_dict)
+                for j in range(1000):
+                    sentence = get_text(ngram_dict, ngram_token_set, ngram_frequency_dict, n,  max_length[str(i)])
+                    file.write(sentence + '\n')
+            file.close()
