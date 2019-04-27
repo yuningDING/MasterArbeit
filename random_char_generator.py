@@ -70,11 +70,7 @@ def _get_next(gram, ngram_dict, ngram_frequency_dict):
     return draw[0]
 
 
-def get_text(file_path, n=3, sentence_length=140, start=None):
-    # get n-grams and frequency distribution
-    ngram_dict = _get_char_ngrams(file_path, n)
-    ngram_char_set, ngram_frequency_dict = _get_ngram_frequency(ngram_dict)
-
+def get_text(ngram_dict, ngram_char_set, ngram_frequency_dict, n=3, sentence_length=140, start=None):
     # get start-grams and frequency distribution
     # start_grams = _get_start_gram(file_path, n)
     # start_ngram_set, start_gram_frequency = _get_start_gram_frequency(start_grams)
@@ -100,10 +96,18 @@ def get_text(file_path, n=3, sentence_length=140, start=None):
     return current_sentence
 
 
+max_length = {'1': 776, '2': 918, '3': 742, '4': 631, '5': 1478, '6': 1032, '7': 1103, '8': 1651, '9': 1820, '10': 1188}
+
+
 if __name__ == "__main__":
-    with open('outputs/char_'+str(5)+'_gram_prompt_1_1000.txt', 'w', encoding='utf-8') as file:
-        for i in range(1000):
-            sentence = get_text('resources/asap_prompt_1.txt', 5, 776)
-            file.write(sentence+'\n')
-    file.close()
+    for i in range(1, 11):
+        for n in range(1, 6):
+            with open('outputs/char_'+str(n)+'_gram_prompt_'+str(i)+'_1000.txt', 'w', encoding='utf-8') as file:
+                print('Generating ' + str(n) + '-gram based answer for' + ' prompt ' + str(i) + ' with max length ' + str(max_length[str(i)]))
+                ngram_dict = _get_char_ngrams('resources/asap_prompt_'+str(i)+'.txt', n)
+                ngram_char_set, ngram_frequency_dict = _get_ngram_frequency(ngram_dict)
+                for j in range(1000):
+                    sentence = get_text(ngram_dict,ngram_char_set, ngram_frequency_dict, n, max_length[str(i)])
+                    file.write(sentence+'\n')
+            file.close()
 
