@@ -1,3 +1,4 @@
+import re
 import random
 from itertools import groupby
 from numpy.random import choice
@@ -63,7 +64,7 @@ def _get_ngram_frequency(char_ngrams):
 
 def _get_next(gram, ngram_dict, ngram_frequency_dict):
     if len(ngram_dict[gram]) is 0 or gram not in ngram_dict.keys():
-        return '/n'
+        return '\n'
     choices = ngram_dict[gram]
     frequency = ngram_frequency_dict[gram]
     draw = choice(a=choices, size=1, p=frequency)
@@ -78,6 +79,10 @@ def get_text(ngram_dict, ngram_char_set, ngram_frequency_dict, n=3, sentence_len
     # choose a start gram using weighted random
     # numpy.random.RandomState.choice(a, size=None, p=None)
     if start is None:
+        start = random.choice(list(ngram_dict.keys()))
+    while re.match(r'^[a-zA-Z0-9 ]*$', start) is None:
+        start = random.choice(list(ngram_dict.keys()))
+    while start is '\n':
         start = random.choice(list(ngram_dict.keys()))
         # choices = choice(a=start_ngram_set, size=1, p=start_gram_frequency)
         # start = choices[0]
@@ -100,14 +105,17 @@ max_length = {'1': 776, '2': 918, '3': 742, '4': 631, '5': 1478, '6': 1032, '7':
 
 
 if __name__ == "__main__":
+    index = 0
     for i in range(1, 11):
         for n in range(1, 6):
             with open('outputs/char_'+str(n)+'_gram_prompt_'+str(i)+'_1000.txt', 'w', encoding='utf-8') as file:
                 print('Generating ' + str(n) + '-gram based answer for' + ' prompt ' + str(i) + ' with max length ' + str(max_length[str(i)]))
                 ngram_dict = _get_char_ngrams('resources/asap_prompt_'+str(i)+'.txt', n)
                 ngram_char_set, ngram_frequency_dict = _get_ngram_frequency(ngram_dict)
+                file.write('Id\tEssaySet\tessay_score\tessay_score\tEssayText\n')
                 for j in range(1000):
                     sentence = get_text(ngram_dict,ngram_char_set, ngram_frequency_dict, n, max_length[str(i)])
-                    file.write(sentence+'\n')
+                    file.write(str(index)+'\t'+str(i)+'\t'+'0\t0\t'+sentence+'\n')
+                    index += 1
             file.close()
 
