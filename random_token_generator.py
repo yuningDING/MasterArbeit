@@ -18,8 +18,8 @@ def _get_token_ngrams(token_list, n):
     # key: n-gram in corpus
     # value: list of possible n-grams following key
     token_ngrams = {}
-    for i in range(len(token_list)-n+1):
-        gram = ' '.join(token_list[i:i+n])
+    for i in range(len(token_list) - n + 1):
+        gram = ' '.join(token_list[i:i + n])
         if gram not in token_ngrams.keys():
             token_ngrams[gram] = []
         if i + n < len(token_list):
@@ -40,7 +40,7 @@ def _get_ngram_frequency(char_ngrams):
         frequency = []
         for n in ngram_frequency[ngram]:
             total = sum(ngram_frequency[ngram])
-            frequency.append(n/total)
+            frequency.append(n / total)
         ngram_frequency[ngram] = frequency
         ngram_char_set[ngram] = char_set
     return ngram_char_set, ngram_frequency
@@ -57,9 +57,9 @@ def _get_next(gram, ngram_dict, ngram_frequency_dict):
 
 
 def _postprocess_output(s):
-    s = re.sub('\\s+([.,!?])\\s*', r'\1 ', s)                       # correct whitespace padding around punctuation
-    s = s.capitalize()                                              # capitalize first letter
-    s = re.sub('([.!?]\\s+[a-z])', lambda c: c.group(1).upper(), s) # capitalize letters following terminated sentences
+    s = re.sub('\\s+([.,!?])\\s*', r'\1 ', s)  # correct whitespace padding around punctuation
+    s = s.capitalize()  # capitalize first letter
+    s = re.sub('([.!?]\\s+[a-z])', lambda c: c.group(1).upper(), s)  # capitalize letters following terminated sentences
     return s
 
 
@@ -74,7 +74,11 @@ def get_text(ngram_dict, ngram_token_set, ngram_frequency_dict, n=3, sentence_le
     current_sentence = start
     current_length = 0
     while current_length < sentence_length:
-        next_gram = _get_next(' '.join(current_sentence.split(SEP)[-n:]), ngram_token_set, ngram_frequency_dict)
+        next_gram = ''
+        if n > 1:
+            next_gram = _get_next(' '.join(current_sentence.split(SEP)[-n:]), ngram_token_set, ngram_frequency_dict)
+        else:
+            next_gram = random.choice(list(ngram_dict.keys()))
         current_sentence = current_sentence + ' ' + next_gram
         if '\n' in next_gram:
             end = current_sentence.find('\n')
@@ -87,20 +91,23 @@ def get_text(ngram_dict, ngram_token_set, ngram_frequency_dict, n=3, sentence_le
 
 max_length = {'1': 776, '2': 918, '3': 742, '4': 631, '5': 1478, '6': 1032, '7': 1103, '8': 1651, '9': 1820, '10': 1188}
 
-
 if __name__ == "__main__":
     index = 0
     for i in range(1, 11):
         for n in range(1, 6):
-            with open('outputs/token_' + str(n) + '_gram_prompt_'+str(i)+'_1000.txt', 'w', encoding='utf-8') as file:
-                print('Generating ' + str(n) + '-gram based answer for' + ' prompt ' + str(i) + ' with max length ' + str(max_length[str(i)]))
+            with open('outputs/new_token_' + str(n) + '_gram_prompt_' + str(i) + '_1000.txt', 'w',
+                      encoding='utf-8') as file:
+                print(
+                    'Generating ' + str(n) + '-gram based answer for' + ' prompt ' + str(i) + ' with max length ' + str(
+                        max_length[str(i)]))
                 # get n-grams and frequency distribution
                 token_list = _preprocess_corpus('resources/asap_prompt_' + str(i) + '.txt')
                 ngram_dict = _get_token_ngrams(token_list, n)
                 ngram_token_set, ngram_frequency_dict = _get_ngram_frequency(ngram_dict)
                 file.write('Id\tEssaySet\tessay_score\tessay_score\tEssayText\n')
                 for j in range(1000):
-                    sentence = get_text(ngram_dict, ngram_token_set, ngram_frequency_dict, n,  max_length[str(i)])
+                    sentence = get_text(ngram_dict, ngram_token_set, ngram_frequency_dict, n, max_length[str(i)])
                     file.write(str(index) + '\t' + str(i) + '\t' + '0\t0\t' + sentence + '\n')
                     index += 1
             file.close()
+   
