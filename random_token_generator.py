@@ -110,4 +110,3 @@ if __name__ == "__main__":
                     file.write(str(index) + '\t' + str(i) + '\t' + '0\t0\t' + sentence + '\n')
                     index += 1
             file.close()
-   
