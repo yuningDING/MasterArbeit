@@ -90,7 +90,11 @@ def get_text(ngram_dict, ngram_char_set, ngram_frequency_dict, n=3, sentence_len
     current_sentence = start
     current_length = 0
     while current_length < sentence_length:
-        next_gram = _get_next(current_sentence[-n:], ngram_char_set, ngram_frequency_dict)
+        next_gram = ''
+        if n > 1:
+            next_gram = _get_next(current_sentence[-n:], ngram_char_set, ngram_frequency_dict)
+        else:
+            next_gram = random.choice(list(ngram_dict.keys()))
         current_sentence += next_gram
         if '\n' in next_gram:
             end = current_sentence.find('\n')
@@ -108,7 +112,7 @@ if __name__ == "__main__":
     index = 0
     for i in range(1, 11):
         for n in range(1, 6):
-            with open('outputs/char_'+str(n)+'_gram_prompt_'+str(i)+'_1000.txt', 'w', encoding='utf-8') as file:
+            with open('outputs/char_1-5gram/char_'+str(n)+'_gram_prompt_'+str(i)+'_1000.txt', 'w', encoding='utf-8') as file:
                 print('Generating ' + str(n) + '-gram based answer for' + ' prompt ' + str(i) + ' with max length ' + str(max_length[str(i)]))
                 ngram_dict = _get_char_ngrams('resources/asap_prompt_'+str(i)+'.txt', n)
                 ngram_char_set, ngram_frequency_dict = _get_ngram_frequency(ngram_dict)
