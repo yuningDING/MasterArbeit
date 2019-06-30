@@ -8,18 +8,23 @@ def _get_char_ngrams(file_path, n):
     """ Returns a dict of N-long character n-grams from text in corpus file """
     # key: n-gram in corpus
     # value: list of possible n-grams following key
-    char_ngrams = {}
+    ngram_dict = {}
+    ngram_list = []
     with open(file_path, 'r', encoding='utf-8') as file:
         text = file.read()
     for i in range(len(text) - n + 1):
         gram = text[i:i+n]
-        if gram not in char_ngrams.keys():
-            char_ngrams[gram] = []
+        if gram not in ngram_dict.keys():
+            ngram_dict[gram] = []
         if i+n < len(text):
-            char_ngrams[gram].append(text[i+n])
-    for g in char_ngrams.keys():
-        char_ngrams.get(g).sort()
-    return char_ngrams
+            ngram_dict[gram].append(text[i+n])
+            ngram_list.append(gram)
+    ngram_set = list(sorted(set(ngram_list)))
+    ngram_frequency = []
+    for g in ngram_set:
+        ngram_dict.get(g).sort()
+        ngram_frequency.append(ngram_list.count(g) / len(ngram_list))
+    return ngram_dict, ngram_set, ngram_frequency
 
 
 def _get_ngram_frequency(char_ngrams):
@@ -71,7 +76,7 @@ def _get_next(gram, ngram_dict, ngram_frequency_dict):
     return draw[0]
 
 
-def get_text(ngram_dict, ngram_char_set, ngram_frequency_dict, n=3, sentence_length=140, start=None):
+def get_text(ngram_set, ngram_frequency, ngram_char_set, ngram_frequency_dict, n=3, sentence_length=140, start=None):
     # get start-grams and frequency distribution
     # start_grams = _get_start_gram(file_path, n)
     # start_ngram_set, start_gram_frequency = _get_start_gram_frequency(start_grams)
@@ -79,11 +84,11 @@ def get_text(ngram_dict, ngram_char_set, ngram_frequency_dict, n=3, sentence_len
     # choose a start gram using weighted random
     # numpy.random.RandomState.choice(a, size=None, p=None)
     if start is None:
-        start = random.choice(list(ngram_dict.keys()))
+        start = random.choice(ngram_set)
     while re.match(r'^[a-zA-Z0-9 ]*$', start) is None:
-        start = random.choice(list(ngram_dict.keys()))
+        start = random.choice(ngram_set)
     while start is '\n':
-        start = random.choice(list(ngram_dict.keys()))
+        start = random.choice(ngram_set)
         # choices = choice(a=start_ngram_set, size=1, p=start_gram_frequency)
         # start = choices[0]
 
@@ -94,7 +99,7 @@ def get_text(ngram_dict, ngram_char_set, ngram_frequency_dict, n=3, sentence_len
         if n > 1:
             next_gram = _get_next(current_sentence[-n:], ngram_char_set, ngram_frequency_dict)
         else:
-            next_gram = random.choice(list(ngram_dict.keys()))
+            next_gram = choice(a=ngram_set, size=1, p=ngram_frequency)[0]
         current_sentence += next_gram
         if '\n' in next_gram:
             end = current_sentence.find('\n')
@@ -111,15 +116,18 @@ max_length = {'1': 776, '2': 918, '3': 742, '4': 631, '5': 1478, '6': 1032, '7':
 if __name__ == "__main__":
     index = 0
     for i in range(1, 11):
-        for n in range(1, 6):
-            with open('outputs/char_1-5gram/char_'+str(n)+'_gram_prompt_'+str(i)+'_1000.txt', 'w', encoding='utf-8') as file:
-                print('Generating ' + str(n) + '-gram based answer for' + ' prompt ' + str(i) + ' with max length ' + str(max_length[str(i)]))
-                ngram_dict = _get_char_ngrams('resources/asap_prompt_'+str(i)+'.txt', n)
-                ngram_char_set, ngram_frequency_dict = _get_ngram_frequency(ngram_dict)
-                file.write('Id\tEssaySet\tessay_score\tessay_score\tEssayText\n')
-                for j in range(1000):
-                    sentence = get_text(ngram_dict,ngram_char_set, ngram_frequency_dict, n, max_length[str(i)])
-                    file.write(str(index)+'\t'+str(i)+'\t'+'0\t0\t'+sentence+'\n')
-                    index += 1
-            file.close()
+        n = 1
+        with open('outputs/char_1-5gram/char_'+str(n)+'_gram_prompt_'+str(i)+'_1000.txt', 'w', encoding='utf-8') as file:
+            print('Generating ' + str(n) + '-gram based answer for' + ' prompt ' + str(i) + ' with max length ' + str(max_length[str(i)]))
+            ngram_dict, ngram_set, ngram_frequency = _get_char_ngrams('resources/asap_prompt_'+str(i)+'.txt', n)
+            ngram_char_set, ngram_frequency_dict = _get_ngram_frequency(ngram_dict)
+            file.write('Id\tEssaySet\tessay_score\tessay_score\tEssayText\n')
+            for j in range(1000):
+                sentence = get_text(ngram_set, ngram_frequency, ngram_char_set, ngram_frequency_dict, n, max_length[str(i)])
+                while len(sentence)<3:
+                    sentence = get_text(ngram_set, ngram_frequency, ngram_char_set, ngram_frequency_dict, n,
+                                        max_length[str(i)])
+                file.write(str(index)+'\t'+str(i)+'\t'+'0\t0\t'+sentence+'\n')
+                index += 1
+        file.close()
 
