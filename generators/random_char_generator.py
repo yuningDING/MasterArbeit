@@ -76,7 +76,7 @@ def _get_next(gram, ngram_dict, ngram_frequency_dict):
     return draw[0]
 
 
-def get_text(ngram_set, ngram_frequency, ngram_char_set, ngram_frequency_dict, n=3, sentence_length=140, start=None):
+def get_text(ngram_set, ngram_frequency, ngram_char_set, ngram_frequency_dict, n, sentence_length, start=None):
     # get start-grams and frequency distribution
     # start_grams = _get_start_gram(file_path, n)
     # start_ngram_set, start_gram_frequency = _get_start_gram_frequency(start_grams)
