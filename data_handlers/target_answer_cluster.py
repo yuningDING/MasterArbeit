@@ -37,7 +37,7 @@ def pre_process(docs, pos_list):
                     if tags_in_doc[tokens_in_doc.index(token)][1] == pos:
                         tokens.append(token)
         token_list.append(tokens)
-        print(token_list)
+        # print(token_list)
     return token_list
 
 
@@ -115,14 +115,22 @@ if __name__ == "__main__":
                              ['NN', 'NNS', 'VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ', 'WDT', 'JJ', 'JJR', 'JJS'])
         vectors = get_doc_vector(model, 50, tokens)
         # k =  total number of target answers / 20
-        k = int(len(articles) / 20)
+        # k = int(len(articles) / 20)
+        # k = 3
+        k = 3
         print('Target answers in prompt ' + str(i) + ' has ' + str(k) + ' clusters.')
         clusters = get_clusters(vectors, k)
-        with open('outputs/TA_clusters_' + str(i) + '.txt', 'w', encoding='utf-8') as file:
-            file.write('Id\tEssaySet\tessay_score\tessay_score\tEssayText\n')
+        # with open('outputs/TA_clusters_' + str(i) + '.txt', 'w', encoding='utf-8') as file:
+        #     file.write('Id\tEssaySet\tessay_score\tessay_score\tEssayText\n')
+        #     for cluster in dict(clusters).keys():
+        #         index = dict(clusters).get(cluster)[0]
+        #         file.write(str(index) + '\t' + str(i) + '\t' + '3\t3\t' + articles[index] + '\n')
+        #     file.close()
+        with open('outputs/TA_CS229_' + str(i) + '.txt', 'w', encoding='utf-8') as file:
+            file.write('Prompt\tText\n')
             for cluster in dict(clusters).keys():
                 index = dict(clusters).get(cluster)[0]
-                file.write(str(index) + '\t' + str(i) + '\t' + '3\t3\t' + articles[index] + '\n')
+                file.write(str(i) + '\t'+articles[index] + '\n')
             file.close()
 
     # x-means

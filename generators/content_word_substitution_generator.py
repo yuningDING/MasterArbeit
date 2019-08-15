@@ -8,7 +8,7 @@ from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet
-from target_answer_cluster import load_glove, get_target_answer
+from data_handlers.target_answer_cluster import load_glove
 
 
 def get_word_list(path):
